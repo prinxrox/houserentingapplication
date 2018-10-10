@@ -5,12 +5,16 @@ class HousesController < ApplicationController
   # GET /houses
   # GET /houses.json
   def index
-    @houses = House.all
+    @houses = House.all if admin_signed_in? || hunter_signed_in?
+    if realtor_signed_in?
+      @houses = House.where(real_estate_company_id: current_realtor.real_estate_company_id)
+    end
   end
 
   # GET /houses/1
   # GET /houses/1.json
   def show
+    @house = House.find(params[:id])
   end
 
   # GET /houses/new
@@ -66,6 +70,33 @@ class HousesController < ApplicationController
     end
   end
 
+  class Reg1
+    include ActiveModel::Model
+
+    attr_accessor :location, :min_price, :max_price, :min_area,
+                  :max_area, :style
+
+    def self.model_name
+      ActiveModel::Name.new(self, nil, 'search')
+    end
+  end
+
+  def search
+    if params.include?(:search)
+      @search_params = Reg1.new(search_params)
+      @houses = find_houses(@search_params)
+      if @houses.empty?
+        flash[:notice] = 'Sorry no results '
+      else
+        flash.clear
+      end
+    else
+      @search_params = Reg1.new
+      @houses = []
+      flash.clear
+    end
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_house
@@ -76,4 +107,33 @@ class HousesController < ApplicationController
     def house_params
       params.require(:house).permit(:location, :sqft, :yearbuilt, :style, :price, :floors, :basement, :currentowner, :real_estate_company_id, :realtor_id)
     end
+
+  def search_params
+    params.require(:search).permit(:location, :min_price, :max_price,
+                                   :min_area, :max_area, :style)
+  end
+
+  def find_houses(query)
+    houses = House.all
+    unless query.location.nil? || query.location.empty?
+      houses = houses.where('location LIKE ?', "%#{query.location.downcase}%")
+    end
+    unless query.min_price.nil? || query.min_price.empty?
+      houses = houses.where('price >= ?', query.min_price.to_f)
+    end
+    unless query.max_price.nil? || query.max_price.empty?
+      houses = houses.where('price <= ?', query.max_price.to_f)
+    end
+    unless query.min_area.nil? || query.min_area.empty?
+      houses = houses.where('sqft >= ?', query.min_area.to_f)
+    end
+    unless query.max_area.nil? || query.max_area.empty?
+      houses = houses.where('sqft <= ?', query.max_area.to_f)
+    end
+    houses = houses.where('style LIKE ?', "%#{query.style.downcase}%")
+    if realtor_signed_in?
+      houses = houses.where(real_estate_company_id: current_realtor.real_estate_company_id)
+    end
+    houses
+  end
 end

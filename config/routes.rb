@@ -1,10 +1,16 @@
 Rails.application.routes.draw do
 
 
+
   resources :houses
+
+  resources :inquiries
+
   root 'home#index'
   resources :real_estate_companies
 
+  get 'search', action: 'search', controller: 'houses'
+  post 'search', action: 'search', controller: 'houses'
 
   devise_scope :hunter do
     root :to => "hunters/sessions#new"

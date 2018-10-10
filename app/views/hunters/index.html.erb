@@ -1,3 +1,4 @@
-<h5>Hello <%= current_hunter.name %>, what would you like to do today?</h5>
+<h5>Hello <%= current_hunter.name %>, Here are your options;</h5>
 <%= link_to 'Log Out', destroy_hunter_session_path, method: :delete, :class => "nav-link" %>
 <%= link_to 'Houses', houses_path, :class => "nav-link" %>
+<%= link_to 'Search Houses', search_path, :class => "nav-link" %>

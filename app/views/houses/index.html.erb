@@ -30,11 +30,14 @@
         <td><%= house.floors %></td>
         <td><%= house.basement %></td>
         <td><%= house.currentowner %></td>
-        <td><%= house.real_estate_company_id %></td>
-        <td><%= house.realtor_id %></td>
+        <td><%= house.real_estate_company.name %></td>
+        <td><%= house.realtor.name %></td>
         <td><%= link_to 'Show', house %></td>
-        <td><%= link_to 'Edit', edit_house_path(house) %></td>
-        <td><%= link_to 'Destroy', house, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <td><% if admin_signed_in? || (realtor_signed_in? && current_realtor.id==house.realtor_id) %><%= link_to 'Edit', edit_house_path(house) %><% end %></td>
+        <td><% if admin_signed_in? || (realtor_signed_in? && current_realtor.id==house.realtor_id) %><%= link_to 'Destroy', house, method: :delete, data: { confirm: 'Are you sure?' } %><% end %></td>
+        <td>
+          <%if hunter_signed_in? %><%= link_to "Inquiries", inquiries_path({ house_id: house.id }), method: :get,:class => "btn btn-primary" %><% end %>
+        </td>
       </tr>
     <% end %>
   </tbody>
@@ -42,4 +45,6 @@
 
 <br>
 
+<% if realtor_signed_in? %>
 <%= link_to 'New House', new_house_path %>
+<% end %>
