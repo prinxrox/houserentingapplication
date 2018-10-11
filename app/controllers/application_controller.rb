@@ -11,6 +11,17 @@ class ApplicationController < ActionController::Base
       end
   end
 
+  def after_sign_out_path_for(resource)
+    if resource == :realtor
+      new_realtor_session_path
+    elsif resource == :admin
+      new_admin_session_path
+    elsif resource == :hunter
+      new_hunter_session_path
+    else
+      root_path
+    end
+  end
 
 
 
